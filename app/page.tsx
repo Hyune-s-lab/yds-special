@@ -58,7 +58,6 @@ export default function Home() {
       {/* 좌측 패널 */}
       <div className="left-panel">
         <form className="search-form" onSubmit={handleSearch}>
-          <h2 className="form-title">네이버 쇼핑 최저가 검색</h2>
           <div className="form-row">
             <div className="form-group">
               <label className="form-label">검색어</label>
