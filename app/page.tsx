@@ -128,8 +128,15 @@ export default function Home() {
 
       {/* 우측 패널 */}
       <div className="right-panel">
-        <div className="viewer-placeholder">
-          뷰어 영역
+        <div className="right-header">
+          <button className="viewer-tab active">JSON Viewer</button>
+          <button className="viewer-tab">TBD</button>
+          <button className="viewer-tab">TBD</button>
+        </div>
+        <div className="right-content">
+          <div className="viewer-placeholder">
+            검색 결과가 여기에 JSON으로 표시됩니다
+          </div>
         </div>
       </div>
     </div>
