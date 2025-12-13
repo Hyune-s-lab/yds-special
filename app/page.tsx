@@ -63,7 +63,7 @@ export default function Home() {
             <input
               type="text"
               className="form-input"
-              placeholder="예: 아이폰 15 프로"
+              placeholder="예: 보튼 캐리어 20인치"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -73,7 +73,7 @@ export default function Home() {
             <input
               type="number"
               className="form-input"
-              placeholder="예: 1000000"
+              placeholder="예: 129000"
               value={threshold}
               onChange={(e) => setThreshold(e.target.value)}
             />
