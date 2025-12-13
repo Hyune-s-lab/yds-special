@@ -293,18 +293,22 @@ a {
 }
 
 .result-mall {
-  font-size: 0.7rem;
-  color: #8b95a1;
+  font-size: 0.65rem;
+  color: #4e5968;
   margin-left: 0.5rem;
   flex-shrink: 0;
+  background: #f2f4f6;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-weight: 500;
 }
 
 .result-price {
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin-left: 1rem;
-  padding: 0.25rem 0.625rem;
-  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
   flex-shrink: 0;
 }
 

@@ -113,7 +113,7 @@ export default function Home() {
               {result.items.map((item, index) => (
                 <div key={index} className="result-item">
                   <div className="result-info">
-                    <span className="result-name">{item.name}</span>
+                    <span className="result-name" title={item.name}>{item.name}</span>
                     <span className="result-mall">{item.mall}</span>
                   </div>
                   <div className={`result-price ${item.position}`}>
