@@ -54,74 +54,84 @@ export default function Home() {
   }
 
   return (
-    <main className="main">
-      <form className="search-form" onSubmit={handleSearch}>
-        <h2 className="form-title">네이버 쇼핑 최저가 검색</h2>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">검색어</label>
-            <input
-              type="text"
-              className="form-input"
-              placeholder="예: 보튼 캐리어 20인치"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">기준가격 (원)</label>
-            <input
-              type="number"
-              className="form-input"
-              placeholder="예: 129000"
-              value={threshold}
-              onChange={(e) => setThreshold(e.target.value)}
-            />
-          </div>
-        </div>
-        <button type="submit" className="search-btn" disabled={loading}>
-          {loading ? '검색 중...' : '검색'}
-        </button>
-      </form>
-
-      {error && <div className="error">{error}</div>}
-
-      {loading && <div className="loading">검색 중입니다...</div>}
-
-      {result && (
-        <div className="results">
-          <div className="results-header">
-            <div className="results-summary">
-              총 <strong>{result.total.toLocaleString()}</strong>개 상품 중{' '}
-              <strong>{result.items.length}</strong>개 표시 |{' '}
-              기준가 이하: <strong style={{ color: '#28a745' }}>
-                {result.items.filter(i => i.position === 'down').length}
-              </strong>개 |{' '}
-              기준가 초과: <strong style={{ color: '#dc3545' }}>
-                {result.items.filter(i => i.position === 'up').length}
-              </strong>개
+    <div className="container">
+      {/* 좌측 패널 */}
+      <div className="left-panel">
+        <form className="search-form" onSubmit={handleSearch}>
+          <h2 className="form-title">네이버 쇼핑 최저가 검색</h2>
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">검색어</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="예: 보튼 캐리어 20인치"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
             </div>
-            {result.total > 100 && (
-              <div className="results-warning">
-                검색 결과가 100개를 초과합니다. 더 정확한 검색어를 입력해주세요. (현재 미지원 기능)
-              </div>
-            )}
+            <div className="form-group">
+              <label className="form-label">기준가격 (원)</label>
+              <input
+                type="number"
+                className="form-input"
+                placeholder="예: 129000"
+                value={threshold}
+                onChange={(e) => setThreshold(e.target.value)}
+              />
+            </div>
           </div>
-          <div className="results-list">
-            {result.items.map((item, index) => (
-              <div key={index} className="result-item">
-                <div className="result-info">
-                  <span className="result-name">{item.name}</span>
-                  <span className="result-mall">{item.mall}</span>
-                </div>
-                <div className={`result-price ${item.position}`}>
-                  {formatPrice(item.price)}
-                </div>
+          <button type="submit" className="search-btn" disabled={loading}>
+            {loading ? '검색 중...' : '검색'}
+          </button>
+        </form>
+
+        {error && <div className="error">{error}</div>}
+
+        {loading && <div className="loading">검색 중입니다...</div>}
+
+        {result && (
+          <div className="results">
+            <div className="results-header">
+              <div className="results-summary">
+                총 <strong>{result.total.toLocaleString()}</strong>개 중{' '}
+                <strong>{result.items.length}</strong>개 표시 |{' '}
+                기준가 이하: <strong style={{ color: '#00c471' }}>
+                  {result.items.filter(i => i.position === 'down').length}
+                </strong>개 |{' '}
+                기준가 초과: <strong style={{ color: '#f04452' }}>
+                  {result.items.filter(i => i.position === 'up').length}
+                </strong>개
               </div>
-            ))}
+              {result.total > 100 && (
+                <div className="results-warning">
+                  검색 결과가 100개가 넘지 않도록 더 정확한 검색어를 넣어주세요.
+                </div>
+              )}
+            </div>
+            <div className="results-list">
+              {result.items.map((item, index) => (
+                <div key={index} className="result-item">
+                  <div className="result-info">
+                    <span className="result-name">{item.name}</span>
+                    <span className="result-mall">{item.mall}</span>
+                  </div>
+                  <div className={`result-price ${item.position}`}>
+                    {formatPrice(item.price)}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
+      </div>
+
+      {/* 우측 패널 */}
+      <div className="right-panel">
+        <div className="viewer-placeholder">
+          뷰어 영역
         </div>
-      )}
-    </main>
+      </div>
+    </div>
   )
 }
