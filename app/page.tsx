@@ -7,6 +7,7 @@ interface Product {
   mall: string
   price: number
   position: 'up' | 'down'
+  productType: string
 }
 
 interface SearchResult {

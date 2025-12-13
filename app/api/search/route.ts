@@ -4,6 +4,7 @@ interface NaverItem {
   title: string
   mallName: string
   lprice: string
+  productType: string
 }
 
 interface NaverResponse {
@@ -61,6 +62,12 @@ export async function GET(request: NextRequest) {
 
     const data = await response.json()
 
+    const productTypeMap: Record<string, string> = {
+      '1': '일반상품',
+      '2': '일반상품+카탈로그',
+      '3': '카탈로그',
+    }
+
     const items = data.items.map((item: NaverItem) => {
       const price = parseInt(item.lprice, 10) || 0
       return {
@@ -68,6 +75,7 @@ export async function GET(request: NextRequest) {
         mall: item.mallName || '알 수 없음',
         price,
         position: price >= thresholdNum ? 'up' : 'down' as const,
+        productType: productTypeMap[item.productType] || item.productType,
       }
     })
 
