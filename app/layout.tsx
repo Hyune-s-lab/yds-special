@@ -39,7 +39,7 @@ export default function RootLayout({
               <img src="/origin-story.png" alt="탄생 설화" className="modal-image" />
             </div>
             <div className="modal-body">
-              이 사이트는 위대하신 염다솜 수령 동지의 치앙마이 해외 시찰 중<br/>
+              이 사이트는 위대하신 염 수령 동지의 치앙마이 해외 시찰 중<br/>
               우연히 만난 무기징역 사형수에게 위스키와 모종의 조건을 하사하시며 탄생했습니다.
               <div className="modal-footnote">
                 <s><i>그 날의 위스키는 달콤했고, 아이디어는 더욱 달콤했다고 전해집니다.</i></s><br/>
