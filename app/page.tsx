@@ -12,7 +12,10 @@ interface Product {
 interface SearchResult {
   total: number
   items: Product[]
+  raw: unknown
 }
+
+type JsonTab = 'raw' | 'processed'
 
 export default function Home() {
   const [query, setQuery] = useState('')
@@ -20,6 +23,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [jsonTab, setJsonTab] = useState<JsonTab>('processed')
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -128,14 +132,26 @@ export default function Home() {
       {/* 우측 패널 */}
       <div className="right-panel">
         <div className="right-header">
-          <button className="viewer-tab active">JSON Viewer</button>
-          <button className="viewer-tab">TBD</button>
-          <button className="viewer-tab">TBD</button>
+          <button
+            className={`viewer-tab ${jsonTab === 'raw' ? 'active' : ''}`}
+            onClick={() => setJsonTab('raw')}
+          >
+            Raw
+          </button>
+          <button
+            className={`viewer-tab ${jsonTab === 'processed' ? 'active' : ''}`}
+            onClick={() => setJsonTab('processed')}
+          >
+            Processed
+          </button>
         </div>
         <div className="right-content">
           {result ? (
             <pre className="json-viewer">
-              {JSON.stringify(result, null, 2)}
+              {jsonTab === 'raw'
+                ? JSON.stringify(result.raw, null, 2)
+                : JSON.stringify({ total: result.total, items: result.items }, null, 2)
+              }
             </pre>
           ) : (
             <div className="viewer-placeholder">

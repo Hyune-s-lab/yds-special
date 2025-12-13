@@ -59,9 +59,9 @@ export async function GET(request: NextRequest) {
       throw new Error(`네이버 API 오류: ${response.status}`)
     }
 
-    const data: NaverResponse = await response.json()
+    const data = await response.json()
 
-    const items = data.items.map((item) => {
+    const items = data.items.map((item: NaverItem) => {
       const price = parseInt(item.lprice, 10) || 0
       return {
         name: cleanHtml(item.title),
@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       total: data.total,
       items,
+      raw: data,
     })
   } catch (error) {
     console.error('Search error:', error)
