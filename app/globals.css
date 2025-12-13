@@ -345,6 +345,26 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
+  position: relative;
+}
+
+.result-name:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: 4px;
+  padding: 0.5rem 0.75rem;
+  background: #191f28;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 400;
+  border-radius: 6px;
+  white-space: normal;
+  word-break: break-all;
+  max-width: 300px;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .result-mall {
