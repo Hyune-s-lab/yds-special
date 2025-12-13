@@ -83,6 +83,7 @@ export async function GET(request: NextRequest) {
       total: data.total,
       items,
       raw: data,
+      searchedAt: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Search error:', error)

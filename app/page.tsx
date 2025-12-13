@@ -14,6 +14,7 @@ interface SearchResult {
   total: number
   items: Product[]
   raw: unknown
+  searchedAt: string
 }
 
 interface SearchHistory {
@@ -22,7 +23,7 @@ interface SearchHistory {
   timestamp: number
 }
 
-type JsonTab = 'raw' | 'processed'
+type ViewerTab = 'analysis' | 'raw' | 'processed'
 
 export default function Home() {
   const [query, setQuery] = useState('')
@@ -30,7 +31,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [jsonTab, setJsonTab] = useState<JsonTab>('processed')
+  const [viewerTab, setViewerTab] = useState<ViewerTab>('analysis')
   const [history, setHistory] = useState<SearchHistory[]>([])
 
   // 페이지 로드 시 검색 기록 불러오기
@@ -189,29 +190,112 @@ export default function Home() {
       <div className="right-panel">
         <div className="right-header">
           <button
-            className={`viewer-tab ${jsonTab === 'raw' ? 'active' : ''}`}
-            onClick={() => setJsonTab('raw')}
+            className={`viewer-tab ${viewerTab === 'analysis' ? 'active' : ''}`}
+            onClick={() => setViewerTab('analysis')}
           >
-            Raw
+            분석
           </button>
           <button
-            className={`viewer-tab ${jsonTab === 'processed' ? 'active' : ''}`}
-            onClick={() => setJsonTab('processed')}
+            className={`viewer-tab ${viewerTab === 'raw' ? 'active' : ''}`}
+            onClick={() => setViewerTab('raw')}
           >
-            Processed
+            원본 JSON
+          </button>
+          <button
+            className={`viewer-tab ${viewerTab === 'processed' ? 'active' : ''}`}
+            onClick={() => setViewerTab('processed')}
+          >
+            정제 JSON
           </button>
         </div>
         <div className="right-content">
           {result ? (
-            <pre className="json-viewer">
-              {jsonTab === 'raw'
-                ? JSON.stringify(result.raw, null, 2)
-                : JSON.stringify({ total: result.total, items: result.items }, null, 2)
-              }
-            </pre>
+            <>
+              {viewerTab === 'analysis' && (
+                <div className="analysis-view">
+                  <div className="analysis-card">
+                    <div className="analysis-card-title">가격 요약</div>
+                    <div className="analysis-stats">
+                      <div className="stat-item">
+                        <span className="stat-label">최저가</span>
+                        <span className="stat-value down">
+                          {Math.min(...result.items.map(i => i.price)).toLocaleString()}원
+                        </span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">최고가</span>
+                        <span className="stat-value up">
+                          {Math.max(...result.items.map(i => i.price)).toLocaleString()}원
+                        </span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">평균가</span>
+                        <span className="stat-value">
+                          {Math.round(result.items.reduce((a, b) => a + b.price, 0) / result.items.length).toLocaleString()}원
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="analysis-card">
+                    <div className="analysis-card-title">기준가 대비 분포</div>
+                    <div className="ratio-bar-container">
+                      <div
+                        className="ratio-bar down"
+                        style={{ width: `${(result.items.filter(i => i.position === 'down').length / result.items.length) * 100}%` }}
+                      >
+                        {result.items.filter(i => i.position === 'down').length}개
+                      </div>
+                      <div
+                        className="ratio-bar up"
+                        style={{ width: `${(result.items.filter(i => i.position === 'up').length / result.items.length) * 100}%` }}
+                      >
+                        {result.items.filter(i => i.position === 'up').length}개
+                      </div>
+                    </div>
+                    <div className="ratio-legend">
+                      <span className="legend-item down">기준가 이하</span>
+                      <span className="legend-item up">기준가 초과</span>
+                    </div>
+                  </div>
+
+                  <div className="analysis-card">
+                    <div className="analysis-card-title">쇼핑몰 TOP 5</div>
+                    <div className="mall-ranking">
+                      {Object.entries(
+                        result.items.reduce((acc, item) => {
+                          acc[item.mall] = (acc[item.mall] || 0) + 1
+                          return acc
+                        }, {} as Record<string, number>)
+                      )
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5)
+                        .map(([mall, count], idx) => (
+                          <div key={mall} className="mall-rank-item">
+                            <span className="rank-num">{idx + 1}</span>
+                            <span className="rank-mall">{mall}</span>
+                            <span className="rank-count">{count}개</span>
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </div>
+                </div>
+              )}
+              {viewerTab === 'raw' && (
+                <pre className="json-viewer">
+                  {JSON.stringify(result.raw, null, 2)}
+                </pre>
+              )}
+              {viewerTab === 'processed' && (
+                <pre className="json-viewer">
+                  {JSON.stringify({ searchedAt: result.searchedAt, total: result.total, items: result.items }, null, 2)}
+                </pre>
+              )}
+            </>
           ) : (
             <div className="viewer-placeholder">
-              검색 결과가 여기에 JSON으로 표시됩니다
+              검색 결과가 여기에 표시됩니다
             </div>
           )}
         </div>

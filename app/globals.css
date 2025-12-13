@@ -140,6 +140,168 @@ a {
   font-size: 0.9rem;
 }
 
+/* Analysis View */
+.analysis-view {
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.analysis-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.analysis-card-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #191f28;
+  margin-bottom: 1rem;
+}
+
+.analysis-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-item {
+  flex: 1;
+  background: #f7f8fa;
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #8b95a1;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #191f28;
+}
+
+.stat-value.down {
+  color: #00c471;
+}
+
+.stat-value.up {
+  color: #f04452;
+}
+
+/* Ratio Bar */
+.ratio-bar-container {
+  display: flex;
+  height: 40px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f7f8fa;
+}
+
+.ratio-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 40px;
+}
+
+.ratio-bar.down {
+  background: #00c471;
+}
+
+.ratio-bar.up {
+  background: #f04452;
+}
+
+.ratio-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.legend-item {
+  font-size: 0.75rem;
+  color: #8b95a1;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.legend-item::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.legend-item.down::before {
+  background: #00c471;
+}
+
+.legend-item.up::before {
+  background: #f04452;
+}
+
+/* Mall Ranking */
+.mall-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.mall-rank-item {
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 0.875rem;
+  background: #f7f8fa;
+  border-radius: 10px;
+}
+
+.rank-num {
+  width: 24px;
+  height: 24px;
+  background: #e5e8eb;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #4e5968;
+  margin-right: 0.75rem;
+}
+
+.mall-rank-item:first-child .rank-num {
+  background: #3182f6;
+  color: #fff;
+}
+
+.rank-mall {
+  flex: 1;
+  font-size: 0.85rem;
+  color: #191f28;
+  font-weight: 500;
+}
+
+.rank-count {
+  font-size: 0.8rem;
+  color: #8b95a1;
+}
+
 .json-viewer {
   width: 100%;
   height: 100%;
