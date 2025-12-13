@@ -140,6 +140,21 @@ a {
   font-size: 0.9rem;
 }
 
+.json-viewer {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 1rem;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 /* Search Form */
 .search-form {
   padding: 1rem 1.25rem;

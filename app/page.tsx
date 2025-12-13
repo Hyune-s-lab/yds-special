@@ -133,9 +133,15 @@ export default function Home() {
           <button className="viewer-tab">TBD</button>
         </div>
         <div className="right-content">
-          <div className="viewer-placeholder">
-            검색 결과가 여기에 JSON으로 표시됩니다
-          </div>
+          {result ? (
+            <pre className="json-viewer">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          ) : (
+            <div className="viewer-placeholder">
+              검색 결과가 여기에 JSON으로 표시됩니다
+            </div>
+          )}
         </div>
       </div>
     </div>
