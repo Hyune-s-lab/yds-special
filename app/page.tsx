@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface Product {
   name: string
@@ -15,6 +15,12 @@ interface SearchResult {
   raw: unknown
 }
 
+interface SearchHistory {
+  query: string
+  threshold: number
+  timestamp: number
+}
+
 type JsonTab = 'raw' | 'processed'
 
 export default function Home() {
@@ -24,6 +30,29 @@ export default function Home() {
   const [result, setResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [jsonTab, setJsonTab] = useState<JsonTab>('processed')
+  const [history, setHistory] = useState<SearchHistory[]>([])
+
+  // 페이지 로드 시 검색 기록 불러오기
+  useEffect(() => {
+    fetch('/api/history')
+      .then(res => res.json())
+      .then(data => setHistory(data))
+      .catch(() => {})
+  }, [])
+
+  const saveHistory = async (q: string, t: number) => {
+    try {
+      await fetch('/api/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: q, threshold: t }),
+      })
+      // 기록 새로고침
+      const res = await fetch('/api/history')
+      const data = await res.json()
+      setHistory(data)
+    } catch {}
+  }
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,11 +75,18 @@ export default function Home() {
       }
 
       setResult(data)
+      // 검색 성공 시 기록 저장
+      saveHistory(query, parseInt(threshold, 10))
     } catch (err) {
       setError(err instanceof Error ? err.message : '검색 중 오류가 발생했습니다.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleHistoryClick = (h: SearchHistory) => {
+    setQuery(h.query)
+    setThreshold(h.threshold.toString())
   }
 
   const formatPrice = (price: number) => {
@@ -88,6 +124,25 @@ export default function Home() {
             {loading ? '검색 중...' : '검색'}
           </button>
         </form>
+
+        {/* 최근 검색 기록 */}
+        {history.length > 0 && (
+          <div className="history">
+            <div className="history-title">최근 검색</div>
+            <div className="history-list">
+              {history.map((h, index) => (
+                <button
+                  key={index}
+                  className="history-item"
+                  onClick={() => handleHistoryClick(h)}
+                >
+                  <span className="history-query">{h.query}</span>
+                  <span className="history-threshold">{h.threshold.toLocaleString()}원</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {error && <div className="error">{error}</div>}
 
