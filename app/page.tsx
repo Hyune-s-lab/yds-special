@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 
 interface Product {
   name: string
+  link: string
   mall: string
   price: number
   position: 'up' | 'down'
@@ -173,7 +174,7 @@ export default function Home() {
               {result.items.map((item, index) => (
                 <div key={index} className="result-item">
                   <div className="result-info">
-                    <span className="result-name" data-tooltip={item.name}>{item.name}</span>
+                    <a href={item.link} target="_blank" rel="noopener noreferrer" className="result-name" data-tooltip={item.name}>{item.name}</a>
                     <span className="result-mall">{item.mall}</span>
                   </div>
                   <div className={`result-price ${item.position}`}>

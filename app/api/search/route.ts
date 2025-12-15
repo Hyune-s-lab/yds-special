@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 interface NaverItem {
   title: string
+  link: string
   mallName: string
   lprice: string
   productType: string
@@ -72,6 +73,7 @@ export async function GET(request: NextRequest) {
       const price = parseInt(item.lprice, 10) || 0
       return {
         name: cleanHtml(item.title),
+        link: item.link,
         mall: item.mallName || '알 수 없음',
         price,
         position: price >= thresholdNum ? 'up' : 'down' as const,
