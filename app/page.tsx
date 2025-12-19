@@ -140,10 +140,10 @@ export default function Home() {
       if (res.ok) {
         setToast({ message: '슬랙으로 리포팅 완료!', type: 'success' })
       } else {
-        setToast({ message: '문제가 생겼습니다! YDS를 불러주세요 🚨', type: 'error' })
+        setToast({ message: '문제가 생겼습니다! 반드시 YDS를 불러주세요.', type: 'error' })
       }
     } catch {
-      setToast({ message: '문제가 생겼습니다! YDS를 불러주세요 🚨', type: 'error' })
+      setToast({ message: '문제가 생겼습니다! 반드시 YDS를 불러주세요.', type: 'error' })
     }
   }
 
