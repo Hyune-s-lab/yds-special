@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 interface Product {
   name: string
@@ -9,6 +9,7 @@ interface Product {
   price: number
   position: 'up' | 'down'
   productType: string
+  searchQuery?: string
 }
 
 interface SearchResult {
@@ -16,13 +17,14 @@ interface SearchResult {
   items: Product[]
   raw: unknown
   searchedAt: string
+  isIntegrated?: boolean
 }
 
-interface SearchHistory {
-  query: string
-  threshold: number
-  timestamp: number
-}
+const PRESET_ITEMS = [
+  { query: '레븐 20인치', threshold: 129000 },
+  { query: '로든 20인치', threshold: 149000 },
+  { query: '픽턴 20인치', threshold: 399000 },
+]
 
 type ViewerTab = 'analysis' | 'raw' | 'processed'
 
@@ -33,29 +35,6 @@ export default function Home() {
   const [result, setResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [viewerTab, setViewerTab] = useState<ViewerTab>('analysis')
-  const [history, setHistory] = useState<SearchHistory[]>([])
-
-  // 페이지 로드 시 검색 기록 불러오기
-  useEffect(() => {
-    fetch('/api/history')
-      .then(res => res.json())
-      .then(data => setHistory(data))
-      .catch(() => {})
-  }, [])
-
-  const saveHistory = async (q: string, t: number) => {
-    try {
-      await fetch('/api/history', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q, threshold: t }),
-      })
-      // 기록 새로고침
-      const res = await fetch('/api/history')
-      const data = await res.json()
-      setHistory(data)
-    } catch {}
-  }
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,8 +57,6 @@ export default function Home() {
       }
 
       setResult(data)
-      // 검색 성공 시 기록 저장
-      saveHistory(query, parseInt(threshold, 10))
     } catch (err) {
       setError(err instanceof Error ? err.message : '검색 중 오류가 발생했습니다.')
     } finally {
@@ -87,9 +64,41 @@ export default function Home() {
     }
   }
 
-  const handleHistoryClick = (h: SearchHistory) => {
-    setQuery(h.query)
-    setThreshold(h.threshold.toString())
+  const handleIntegratedSearch = async () => {
+    setLoading(true)
+    setError(null)
+    setResult(null)
+
+    try {
+      const results = await Promise.all(
+        PRESET_ITEMS.map(async (item) => {
+          const res = await fetch(`/api/search?query=${encodeURIComponent(item.query)}&threshold=${item.threshold}`)
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error)
+          return {
+            ...data,
+            items: data.items
+              .filter((p: Product) => p.position === 'down')
+              .map((p: Product) => ({ ...p, searchQuery: item.query }))
+          }
+        })
+      )
+
+      const allItems = results.flatMap(r => r.items)
+      const totalSum = results.reduce((sum, r) => sum + r.total, 0)
+
+      setResult({
+        total: totalSum,
+        items: allItems,
+        raw: results.map(r => r.raw),
+        searchedAt: new Date().toISOString(),
+        isIntegrated: true,
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '검색 중 오류가 발생했습니다.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const formatPrice = (price: number) => {
@@ -128,24 +137,21 @@ export default function Home() {
           </button>
         </form>
 
-        {/* 최근 검색 기록 */}
-        {history.length > 0 && (
-          <div className="history">
-            <div className="history-title">최근 검색</div>
-            <div className="history-list">
-              {history.map((h, index) => (
-                <button
-                  key={index}
-                  className="history-item"
-                  onClick={() => handleHistoryClick(h)}
-                >
-                  <span className="history-query">{h.query}</span>
-                  <span className="history-threshold">{h.threshold.toLocaleString()}원</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* 빠른 입력 버튼 */}
+        <div className="quick-buttons">
+          {PRESET_ITEMS.map((item) => (
+            <button
+              key={item.query}
+              className="quick-btn"
+              onClick={() => { setQuery(item.query); setThreshold(item.threshold.toString()); }}
+            >
+              {item.query} <span className="quick-price">{item.threshold.toLocaleString()}원</span>
+            </button>
+          ))}
+          <button className="quick-btn integrated" onClick={handleIntegratedSearch} disabled={loading}>
+            통합 검색
+          </button>
+        </div>
 
         {error && <div className="error">{error}</div>}
 
@@ -155,16 +161,25 @@ export default function Home() {
           <div className="results">
             <div className="results-header">
               <div className="results-summary">
-                총 <strong>{result.total.toLocaleString()}</strong>개 중{' '}
-                <strong>{result.items.length}</strong>개 표시 |{' '}
-                기준가 이하: <strong style={{ color: '#00c471' }}>
-                  {result.items.filter(i => i.position === 'down').length}
-                </strong>개 |{' '}
-                기준가 초과: <strong style={{ color: '#f04452' }}>
-                  {result.items.filter(i => i.position === 'up').length}
-                </strong>개
+                {result.isIntegrated ? (
+                  <>
+                    통합 검색 | 기준가 이하{' '}
+                    <strong style={{ color: '#00c471' }}>{result.items.length}</strong>개
+                  </>
+                ) : (
+                  <>
+                    총 <strong>{result.total.toLocaleString()}</strong>개 중{' '}
+                    <strong>{result.items.length}</strong>개 표시 |{' '}
+                    기준가 이하: <strong style={{ color: '#00c471' }}>
+                      {result.items.filter(i => i.position === 'down').length}
+                    </strong>개 |{' '}
+                    기준가 초과: <strong style={{ color: '#f04452' }}>
+                      {result.items.filter(i => i.position === 'up').length}
+                    </strong>개
+                  </>
+                )}
               </div>
-              {result.total > 100 && (
+              {!result.isIntegrated && result.total > 100 && (
                 <div className="results-warning">
                   검색 결과가 100개가 넘지 않도록 더 정확한 검색어를 넣어주세요.
                 </div>
@@ -174,6 +189,9 @@ export default function Home() {
               {result.items.map((item, index) => (
                 <div key={index} className="result-item">
                   <div className="result-info">
+                    {item.searchQuery && (
+                      <span className="result-query">{item.searchQuery}</span>
+                    )}
                     <a href={item.link} target="_blank" rel="noopener noreferrer" className="result-name" data-tooltip={item.name}>{item.name}</a>
                     <span className="result-mall">{item.mall}</span>
                   </div>

@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const url = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query)}&display=100&sort=asc`
+    const url = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query)}&display=100&sort=asc&exclude=used:rental:cbshop`
 
     const response = await fetch(url, {
       headers: {
