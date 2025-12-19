@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface Product {
   name: string
@@ -9,7 +9,6 @@ interface Product {
   price: number
   position: 'up' | 'down'
   productType: string
-  searchQuery?: string
 }
 
 interface SearchResult {
@@ -17,46 +16,58 @@ interface SearchResult {
   items: Product[]
   raw: unknown
   searchedAt: string
-  isIntegrated?: boolean
 }
 
 const PRESET_BRANDS = [
   {
     name: '레븐',
     sizes: [
-      { size: '18인치', threshold: 99000 },
       { size: '20인치', threshold: 129000 },
       { size: '24인치', threshold: 159000 },
-      { size: '26인치', threshold: 179000 },
       { size: '28인치', threshold: 199000 },
     ],
   },
   {
     name: '로든',
     sizes: [
-      { size: '18인치', threshold: 119000 },
       { size: '20인치', threshold: 149000 },
       { size: '24인치', threshold: 179000 },
-      { size: '26인치', threshold: 199000 },
       { size: '28인치', threshold: 219000 },
     ],
   },
   {
     name: '픽턴',
     sizes: [
-      { size: '18인치', threshold: 349000 },
       { size: '20인치', threshold: 399000 },
       { size: '24인치', threshold: 449000 },
-      { size: '26인치', threshold: 479000 },
       { size: '28인치', threshold: 509000 },
     ],
   },
+  {
+    name: '데일',
+    sizes: [
+      { size: '20인치', threshold: 139000 },
+      { size: '24인치', threshold: 169000 },
+      { size: '28인치', threshold: 209000 },
+    ],
+  },
+  {
+    name: '엘론',
+    sizes: [
+      { size: '20인치', threshold: 159000 },
+      { size: '24인치', threshold: 189000 },
+      { size: '28인치', threshold: 229000 },
+    ],
+  },
+  {
+    name: '브라이튼 루미',
+    sizes: [
+      { size: '20인치', threshold: 119000 },
+      { size: '24인치', threshold: 149000 },
+      { size: '28인치', threshold: 189000 },
+    ],
+  },
 ]
-
-// 통합 검색용 플랫 배열
-const ALL_PRESETS = PRESET_BRANDS.flatMap(brand =>
-  brand.sizes.map(s => ({ query: `${brand.name} ${s.size}`, threshold: s.threshold }))
-)
 
 type ViewerTab = 'analysis' | 'raw' | 'processed'
 
@@ -68,6 +79,17 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [viewerTab, setViewerTab] = useState<ViewerTab>('analysis')
   const [expandedBrand, setExpandedBrand] = useState<string | null>(null)
+  const accordionRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (accordionRef.current && !accordionRef.current.contains(e.target as Node)) {
+        setExpandedBrand(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -97,45 +119,30 @@ export default function Home() {
     }
   }
 
-  const handleIntegratedSearch = async () => {
-    setLoading(true)
-    setError(null)
-    setResult(null)
-
-    try {
-      const results = await Promise.all(
-        ALL_PRESETS.map(async (item) => {
-          const res = await fetch(`/api/search?query=${encodeURIComponent(item.query)}&threshold=${item.threshold}`)
-          const data = await res.json()
-          if (!res.ok) throw new Error(data.error)
-          return {
-            ...data,
-            items: data.items
-              .filter((p: Product) => p.position === 'down')
-              .map((p: Product) => ({ ...p, searchQuery: item.query }))
-          }
-        })
-      )
-
-      const allItems = results.flatMap(r => r.items)
-      const totalSum = results.reduce((sum, r) => sum + r.total, 0)
-
-      setResult({
-        total: totalSum,
-        items: allItems,
-        raw: results.map(r => r.raw),
-        searchedAt: new Date().toISOString(),
-        isIntegrated: true,
-      })
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '검색 중 오류가 발생했습니다.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const formatPrice = (price: number) => {
     return price.toLocaleString('ko-KR') + '원'
+  }
+
+  const handleReport = async (item: Product) => {
+    try {
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: item.name,
+          mall: item.mall,
+          price: item.price,
+          link: item.link,
+        }),
+      })
+      if (res.ok) {
+        alert('리포팅 완료!')
+      } else {
+        alert('리포팅 실패')
+      }
+    } catch {
+      alert('리포팅 중 오류 발생')
+    }
   }
 
   return (
@@ -172,7 +179,7 @@ export default function Home() {
 
         {/* 프리셋 아코디언 */}
         <div className="preset-section">
-          <div className="preset-accordion">
+          <div className="preset-accordion" ref={accordionRef}>
             {PRESET_BRANDS.map((brand) => (
               <div key={brand.name} className="accordion-item">
                 <button
@@ -191,6 +198,7 @@ export default function Home() {
                         onClick={() => {
                           setQuery(`${brand.name} ${item.size}`)
                           setThreshold(item.threshold.toString())
+                          setExpandedBrand(null)
                         }}
                       >
                         <span className="preset-size">{item.size}</span>
@@ -202,9 +210,6 @@ export default function Home() {
               </div>
             ))}
           </div>
-          <button className="integrated-btn" onClick={handleIntegratedSearch} disabled={loading}>
-            전체 통합 검색
-          </button>
         </div>
 
         {error && <div className="error">{error}</div>}
@@ -215,27 +220,18 @@ export default function Home() {
           <div className="results">
             <div className="results-header">
               <div className="results-summary">
-                {result.isIntegrated ? (
-                  <>
-                    통합 검색 | 기준가 이하{' '}
-                    <strong style={{ color: '#00c471' }}>{result.items.length}</strong>개
-                  </>
-                ) : (
-                  <>
-                    총 <strong>{result.total.toLocaleString()}</strong>개 중{' '}
-                    <strong>{result.items.length}</strong>개 표시 |{' '}
-                    기준가 이하: <strong style={{ color: '#00c471' }}>
-                      {result.items.filter(i => i.position === 'down').length}
-                    </strong>개 |{' '}
-                    기준가 초과: <strong style={{ color: '#f04452' }}>
-                      {result.items.filter(i => i.position === 'up').length}
-                    </strong>개
-                  </>
-                )}
+                총 <strong>{result.total.toLocaleString()}</strong>개 중{' '}
+                <strong>{result.items.length}</strong>개 표시 |{' '}
+                기준가 이하: <strong style={{ color: '#00c471' }}>
+                  {result.items.filter(i => i.position === 'down').length}
+                </strong>개 |{' '}
+                기준가 초과: <strong style={{ color: '#f04452' }}>
+                  {result.items.filter(i => i.position === 'up').length}
+                </strong>개
               </div>
-              {!result.isIntegrated && result.total > 100 && (
+              {result.total > 1000 && (
                 <div className="results-warning">
-                  검색 결과가 100개가 넘지 않도록 더 정확한 검색어를 넣어주세요.
+                  검색 결과가 1000개를 초과합니다. 더 정확한 검색어를 넣어주세요.
                 </div>
               )}
             </div>
@@ -244,15 +240,15 @@ export default function Home() {
                 <div key={index} className="result-item">
                   <span className="result-num">{index + 1}</span>
                   <div className="result-info">
-                    {item.searchQuery && (
-                      <span className="result-query">{item.searchQuery}</span>
-                    )}
                     <a href={item.link} target="_blank" rel="noopener noreferrer" className="result-name" data-tooltip={item.name}>{item.name}</a>
                     <span className="result-mall">{item.mall}</span>
                   </div>
                   <div className={`result-price ${item.position}`}>
                     {formatPrice(item.price)}
                   </div>
+                  <button className="report-btn" onClick={() => handleReport(item)}>
+                    리포트
+                  </button>
                 </div>
               ))}
             </div>
