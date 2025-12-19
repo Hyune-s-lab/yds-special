@@ -48,20 +48,45 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const url = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query)}&display=100&sort=asc&exclude=used:rental:cbshop`
-
-    const response = await fetch(url, {
-      headers: {
-        'X-Naver-Client-Id': clientId,
-        'X-Naver-Client-Secret': clientSecret,
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`네이버 API 오류: ${response.status}`)
+    const baseUrl = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(query)}&display=100&sort=asc&exclude=used:rental:cbshop`
+    const headers = {
+      'X-Naver-Client-Id': clientId,
+      'X-Naver-Client-Secret': clientSecret,
     }
 
-    const data = await response.json()
+    // 첫 번째 요청
+    const firstResponse = await fetch(`${baseUrl}&start=1`, { headers })
+    if (!firstResponse.ok) {
+      throw new Error(`네이버 API 오류: ${firstResponse.status}`)
+    }
+    const firstData: NaverResponse = await firstResponse.json()
+
+    // 추가 요청이 필요한지 확인 (최대 10번 = 1000개)
+    const total = firstData.total
+    const pageCount = Math.min(Math.ceil(total / 100), 10)
+
+    let allRawItems: NaverItem[] = [...firstData.items]
+    const rawResponses: NaverResponse[] = [firstData]
+
+    if (pageCount > 1) {
+      // 나머지 페이지 병렬 요청 (start: 101, 201, 301, ...)
+      const additionalRequests = []
+      for (let i = 2; i <= pageCount; i++) {
+        const start = (i - 1) * 100 + 1
+        additionalRequests.push(
+          fetch(`${baseUrl}&start=${start}`, { headers })
+            .then(res => res.ok ? res.json() : null)
+        )
+      }
+
+      const additionalResponses = await Promise.all(additionalRequests)
+      for (const data of additionalResponses) {
+        if (data && data.items) {
+          allRawItems = [...allRawItems, ...data.items]
+          rawResponses.push(data)
+        }
+      }
+    }
 
     const productTypeMap: Record<string, string> = {
       '1': '일반상품',
@@ -69,7 +94,7 @@ export async function GET(request: NextRequest) {
       '3': '카탈로그',
     }
 
-    const items = data.items.map((item: NaverItem) => {
+    const items = allRawItems.map((item: NaverItem) => {
       const price = parseInt(item.lprice, 10) || 0
       return {
         name: cleanHtml(item.title),
@@ -82,9 +107,9 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({
-      total: data.total,
+      total,
       items,
-      raw: data,
+      raw: rawResponses.length === 1 ? rawResponses[0] : rawResponses,
       searchedAt: new Date().toISOString(),
     })
   } catch (error) {
