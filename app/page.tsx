@@ -188,6 +188,7 @@ export default function Home() {
             <div className="results-list">
               {result.items.map((item, index) => (
                 <div key={index} className="result-item">
+                  <span className="result-num">{index + 1}</span>
                   <div className="result-info">
                     {item.searchQuery && (
                       <span className="result-query">{item.searchQuery}</span>

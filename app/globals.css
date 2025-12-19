@@ -605,6 +605,15 @@ a {
   border-bottom: none;
 }
 
+.result-num {
+  font-size: 0.7rem;
+  color: #8b95a1;
+  min-width: 2rem;
+  text-align: right;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
 .result-info {
   flex: 1;
   min-width: 0;
