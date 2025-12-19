@@ -92,12 +92,6 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [toast])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -156,8 +150,10 @@ export default function Home() {
   return (
     <>
       {toast && (
-        <div className={`toast ${toast.type}`}>
-          {toast.message}
+        <div className="toast-overlay" onClick={() => setToast(null)}>
+          <div className={`toast ${toast.type}`}>
+            {toast.message}
+          </div>
         </div>
       )}
     <div className="container">
