@@ -492,59 +492,126 @@ a {
   cursor: not-allowed;
 }
 
-/* Quick Buttons */
-.quick-buttons {
+/* Preset Accordion */
+.preset-section {
   padding: 0.75rem 1.25rem;
   border-bottom: 1px solid #f2f4f6;
-  display: flex;
-  gap: 0.5rem;
 }
 
-.quick-btn {
-  padding: 0.5rem 0.875rem;
+.preset-accordion {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.accordion-item {
+  flex: 1;
+  position: relative;
+}
+
+.accordion-header {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
   background: #f7f8fa;
   border: 1px solid #e5e8eb;
   border-radius: 8px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   color: #191f28;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
 }
 
-.quick-btn:hover {
+.accordion-header:hover {
   background: #e8f3ff;
   border-color: #3182f6;
   color: #3182f6;
 }
 
-.quick-price {
-  color: #8b95a1;
-  font-size: 0.7rem;
-  font-weight: 400;
-}
-
-.quick-btn:hover .quick-price {
-  color: #3182f6;
-}
-
-.quick-btn.integrated {
+.accordion-header.expanded {
   background: #3182f6;
   border-color: #3182f6;
   color: #fff;
+  border-radius: 8px 8px 0 0;
 }
 
-.quick-btn.integrated:hover {
+.accordion-arrow {
+  font-size: 0.6rem;
+}
+
+.accordion-content {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #3182f6;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.preset-item {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #f2f4f6;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.preset-item:last-child {
+  border-bottom: none;
+}
+
+.preset-item:hover {
+  background: #e8f3ff;
+}
+
+.preset-size {
+  color: #191f28;
+  font-weight: 500;
+}
+
+.preset-price {
+  color: #8b95a1;
+  font-size: 0.7rem;
+}
+
+.preset-item:hover .preset-size,
+.preset-item:hover .preset-price {
+  color: #3182f6;
+}
+
+.integrated-btn {
+  width: 100%;
+  padding: 0.625rem;
+  background: #3182f6;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.integrated-btn:hover {
   background: #1b64da;
-  border-color: #1b64da;
 }
 
-.quick-btn.integrated:disabled {
+.integrated-btn:disabled {
   background: #d1d6db;
-  border-color: #d1d6db;
   cursor: not-allowed;
 }
 

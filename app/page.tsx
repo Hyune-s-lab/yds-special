@@ -20,11 +20,43 @@ interface SearchResult {
   isIntegrated?: boolean
 }
 
-const PRESET_ITEMS = [
-  { query: '레븐 20인치', threshold: 129000 },
-  { query: '로든 20인치', threshold: 149000 },
-  { query: '픽턴 20인치', threshold: 399000 },
+const PRESET_BRANDS = [
+  {
+    name: '레븐',
+    sizes: [
+      { size: '18인치', threshold: 99000 },
+      { size: '20인치', threshold: 129000 },
+      { size: '24인치', threshold: 159000 },
+      { size: '26인치', threshold: 179000 },
+      { size: '28인치', threshold: 199000 },
+    ],
+  },
+  {
+    name: '로든',
+    sizes: [
+      { size: '18인치', threshold: 119000 },
+      { size: '20인치', threshold: 149000 },
+      { size: '24인치', threshold: 179000 },
+      { size: '26인치', threshold: 199000 },
+      { size: '28인치', threshold: 219000 },
+    ],
+  },
+  {
+    name: '픽턴',
+    sizes: [
+      { size: '18인치', threshold: 349000 },
+      { size: '20인치', threshold: 399000 },
+      { size: '24인치', threshold: 449000 },
+      { size: '26인치', threshold: 479000 },
+      { size: '28인치', threshold: 509000 },
+    ],
+  },
 ]
+
+// 통합 검색용 플랫 배열
+const ALL_PRESETS = PRESET_BRANDS.flatMap(brand =>
+  brand.sizes.map(s => ({ query: `${brand.name} ${s.size}`, threshold: s.threshold }))
+)
 
 type ViewerTab = 'analysis' | 'raw' | 'processed'
 
@@ -35,6 +67,7 @@ export default function Home() {
   const [result, setResult] = useState<SearchResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [viewerTab, setViewerTab] = useState<ViewerTab>('analysis')
+  const [expandedBrand, setExpandedBrand] = useState<string | null>(null)
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -71,7 +104,7 @@ export default function Home() {
 
     try {
       const results = await Promise.all(
-        PRESET_ITEMS.map(async (item) => {
+        ALL_PRESETS.map(async (item) => {
           const res = await fetch(`/api/search?query=${encodeURIComponent(item.query)}&threshold=${item.threshold}`)
           const data = await res.json()
           if (!res.ok) throw new Error(data.error)
@@ -137,19 +170,40 @@ export default function Home() {
           </button>
         </form>
 
-        {/* 빠른 입력 버튼 */}
-        <div className="quick-buttons">
-          {PRESET_ITEMS.map((item) => (
-            <button
-              key={item.query}
-              className="quick-btn"
-              onClick={() => { setQuery(item.query); setThreshold(item.threshold.toString()); }}
-            >
-              {item.query} <span className="quick-price">{item.threshold.toLocaleString()}원</span>
-            </button>
-          ))}
-          <button className="quick-btn integrated" onClick={handleIntegratedSearch} disabled={loading}>
-            통합 검색
+        {/* 프리셋 아코디언 */}
+        <div className="preset-section">
+          <div className="preset-accordion">
+            {PRESET_BRANDS.map((brand) => (
+              <div key={brand.name} className="accordion-item">
+                <button
+                  className={`accordion-header ${expandedBrand === brand.name ? 'expanded' : ''}`}
+                  onClick={() => setExpandedBrand(expandedBrand === brand.name ? null : brand.name)}
+                >
+                  {brand.name}
+                  <span className="accordion-arrow">{expandedBrand === brand.name ? '▲' : '▼'}</span>
+                </button>
+                {expandedBrand === brand.name && (
+                  <div className="accordion-content">
+                    {brand.sizes.map((item) => (
+                      <button
+                        key={item.size}
+                        className="preset-item"
+                        onClick={() => {
+                          setQuery(`${brand.name} ${item.size}`)
+                          setThreshold(item.threshold.toString())
+                        }}
+                      >
+                        <span className="preset-size">{item.size}</span>
+                        <span className="preset-price">{item.threshold.toLocaleString()}원</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <button className="integrated-btn" onClick={handleIntegratedSearch} disabled={loading}>
+            전체 통합 검색
           </button>
         </div>
 
