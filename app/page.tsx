@@ -79,6 +79,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [viewerTab, setViewerTab] = useState<ViewerTab>('analysis')
   const [expandedBrand, setExpandedBrand] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const accordionRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -90,6 +91,13 @@ export default function Home() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [toast])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -136,16 +144,22 @@ export default function Home() {
         }),
       })
       if (res.ok) {
-        alert('리포팅 완료!')
+        setToast({ message: '슬랙으로 리포팅 완료!', type: 'success' })
       } else {
-        alert('리포팅 실패')
+        setToast({ message: '문제가 생겼습니다! YDS를 불러주세요 🚨', type: 'error' })
       }
     } catch {
-      alert('리포팅 중 오류 발생')
+      setToast({ message: '문제가 생겼습니다! YDS를 불러주세요 🚨', type: 'error' })
     }
   }
 
   return (
+    <>
+      {toast && (
+        <div className={`toast ${toast.type}`}>
+          {toast.message}
+        </div>
+      )}
     <div className="container">
       {/* 좌측 패널 */}
       <div className="left-panel">
@@ -371,5 +385,6 @@ export default function Home() {
         </div>
       </div>
     </div>
+    </>
   )
 }
